@@ -214,9 +214,7 @@ end
 ----------- LDTK Functions -------------
 --loads project settings
 function ldtk:load(file, level)
-    if love.filesystem.getInfo(file) then
-        print("[löve-LDtk] Loading file:", file)
-    end
+    print("[löve-LDtk] Loading file:", file)
     local content, size = love.filesystem.read(file)
     if not content then
         error("[löve-LDtk] Failed to read file: " .. file)
