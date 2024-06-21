@@ -194,11 +194,12 @@ end
 
 ----------- HELPER FUNCTIONS ------------
 --LDtk uses hex colors while LÖVE uses RGB (on a scale of 0 to 1)
--- Converts hex color to RGB
+-- Was causing a bad argument error in a web interpreter when using the load function
 function ldtk.hex2rgb(color)
-    local r = load("return {0x" .. color:sub(2, 3) .. ",0x" .. color:sub(4, 5) .. 
-                ",0x" .. color:sub(6, 7) .. "}")()
-    return {r[1] / 255, r[2] / 255, r[3] / 255}
+    local r = tonumber(color:sub(2, 3), 16)
+    local g = tonumber(color:sub(4, 5), 16)
+    local b = tonumber(color:sub(6, 7), 16)
+    return {r / 255, g / 255, b / 255}
 end
 
 
@@ -213,7 +214,20 @@ end
 ----------- LDTK Functions -------------
 --loads project settings
 function ldtk:load(file, level)
-    self.data = json.decode(love.filesystem.read(file))
+    if love.filesystem.getInfo(file) then
+        print("[löve-LDtk] Loading file:", file)
+    end
+    local content, size = love.filesystem.read(file)
+    if not content then
+        error("[löve-LDtk] Failed to read file: " .. file)
+    end
+
+    local success, data = pcall(json.decode, content)
+    if not success then
+        error("[löve-LDtk] Failed to decode JSON: " .. data)
+    else
+        self.data = data
+    end
     self.entities = {}
     self.x, self.y = self.x or 0, self.x or 0
     self.countOfLevels = #self.data.levels
